@@ -15,6 +15,7 @@ PRODUCT_PACKAGES += \
 
 # Init scripts
 PRODUCT_PACKAGES += \
+    ueventd.s9863a1h10.rc \
     init.s9863a1h10.rc
 
 # Input

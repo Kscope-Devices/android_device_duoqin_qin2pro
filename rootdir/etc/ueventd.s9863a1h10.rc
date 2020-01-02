@@ -1,0 +1,6 @@
+subsystem adf
+    devname uevent_devname
+
+/dev/adf0                       0660     system      root
+/dev/adf-interface0.0           0660     system      root
+/dev/adf-overlay-engine0.0      0660     system      root
