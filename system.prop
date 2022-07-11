@@ -1,0 +1,11 @@
+# Frp
+ro.frp.pst=/dev/block/platform/soc/soc:ap-ahb/20600000.sdio/by-name/persist
+
+# RIL
+ro.telephony.default_network=9
+
+# Misc - from Phh-Treble
+debug.sf.latch_unsignaled=1
+qemu.hw.mainkeys=0
+ro.surface_flinger.use_color_management=false
+sys.usb.ffs.aio_compat=true

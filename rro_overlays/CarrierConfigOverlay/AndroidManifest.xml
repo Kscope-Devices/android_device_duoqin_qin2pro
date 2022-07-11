@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="ink.kscope.device.carrierconfigoverlay">
+
+    <overlay
+        android:isStatic="true"
+        android:priority="100"
+        android:targetPackage="com.android.carrierconfig" />
+</manifest>

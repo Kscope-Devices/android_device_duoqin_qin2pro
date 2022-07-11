@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<carrier_config_list>
+    <carrier_config>
+        <boolean name="carrier_volte_available_bool" value="true" />
+        <boolean name="carrier_vt_available_bool" value="true" />
+        <boolean name="carrier_volte_tty_supported_bool" value="false" />
+        <boolean name="carrier_wfc_ims_available_bool" value="true" />
+        <boolean name="apn_expand_bool" value="true" />
+        <boolean name="world_phone_bool" value="true" />
+        <boolean name="allow_adding_apns_bool" value="true" />
+        <boolean name="hide_preferred_network_type_bool" value="false" />
+        <boolean name="show_cdma_choices_bool" value="true" />
+        <boolean name="allow_video_call_in_low_battery" value="true" />
+        <boolean name="config_enable_display_14digit_imei" value="false" />
+        <boolean name="video_call_use_ext" value="true" />
+        <boolean name="use_custom_video_ui" value="false" />
+        <boolean name="config_hide_preview_in_vt_confcall" value="false" />
+        <boolean name="config_carrier_cs_retry_available" value="false" />
+        <boolean name="remove_modify_call_capability" value="false" />
+        <boolean name="show_video_quality_toast" value="true" />
+        <boolean name="show_call_session_event_toast" value="true" />
+        <boolean name="show_data_usage_toast" value="true" />
+        <boolean name="show_apn_setting_cdma_bool" value="true" />
+        <boolean name="support_video_conference_call_bool" value="true" />
+        <boolean name="show_static_image_ui" value="false" />
+        <boolean name="transmit_static_image" value="false" />
+        <boolean name="show_video_quality_ui" value="false" />
+        <boolean name="vowifi_call_quality" value="false" />
+        <boolean name="carrier_allow_deflect_ims_call_bool" value="false" />
+        <boolean name="rtt_auto_upgrade_bool" value="false" />
+        <boolean name="rtt_supported_for_vt_bool" value="false" />
+        <boolean name="rtt_upgrade_supported_bool" value="false" />
+        <boolean name="rtt_downgrade_supported_bool" value="false" />
+        <boolean name="show_rtt_visibility_setting_bool" value="false" />
+        <boolean name="ignore_rtt_mode_setting_bool" value="false" />
+        <int name="default_rtt_mode_int" value="0" />
+        <string-array name="carrier_metered_apn_types_strings" num="3">
+            <item value="default" />
+            <item value="dun" />
+            <item value="supl" />
+        </string-array>
+        <string-array name="carrier_metered_roaming_apn_types_strings" num="3">
+            <item value="default" />
+            <item value="dun" />
+            <item value="supl" />
+        </string-array>
+        <boolean name="config_update_service_status" value="false" />
+        <boolean name="config_update_volte_icon" value="false" />
+        <boolean name="auto_retry_failed_wifi_emergency_call" value="true" />
+        <boolean name="carrier_supports_ss_over_ut_bool" value="true" />
+        <boolean name="allow_hold_video_call_bool" value="true" />
+        <boolean name="allow_one_way_accept_video_call" value="true" />
+        <boolean name="carrier_supports_multianchor_conference" value="false" />
+        <boolean name="carrier_call_composer_supported_bool" value="false" />
+        <boolean name="carrier_allow_transfer_ims_call_bool" value="true" />
+        <boolean name="carrier_wfc_supports_wifi_only_bool" value="false" />
+        <boolean name="call_barring_visibility_bool" value="true" />
+        <boolean name="support_direct_fdn_dialing_bool" value="true" />
+    </carrier_config>
+</carrier_config_list>

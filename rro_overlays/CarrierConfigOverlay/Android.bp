@@ -1,0 +1,6 @@
+runtime_resource_overlay {
+    name: "CarrierConfigOverlayQin2Pro",
+    theme: "CarrierConfigOverlayQin2Pro",
+    product_specific: true,
+    sdk_version: "current",
+}

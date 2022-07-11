@@ -1,0 +1,6 @@
+runtime_resource_overlay {
+    name: "FrameworkResOverlayQin2Pro",
+    theme: "FrameworkResOverlayQin2Pro",
+    product_specific: true,
+    sdk_version: "current",
+}
