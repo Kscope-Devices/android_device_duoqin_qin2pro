@@ -1,2 +1,6 @@
+on post-fs
+    mount none /system/lib/power.sprd.so /vendor/lib/power.sprd.so bind
+    mount none /system/lib64/power.sprd.so /vendor/lib64/power.sprd.so bind
+
 on boot
     stop console

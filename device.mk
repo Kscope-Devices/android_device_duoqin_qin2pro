@@ -30,6 +30,12 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/keylayout/gpio-keys.kl:system/usr/keylayout/sprd-gpio-keys.kl
 
+# PowerHAL
+PRODUCT_PACKAGES += \
+    power.sprd
+
+POWERHINT_PRODUCT_CONFIG := sharkl3
+
 # Soong namespaces
 PRODUCT_SOONG_NAMESPACES += \
     $(LOCAL_PATH)

@@ -12,20 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-ifneq ($(BOARD_POWERHINT_HAL),)
 LOCAL_PATH := $(call my-dir)
 
 # HAL module implemenation stored in
 # hw/<POWERS_HARDWARE_MODULE_ID>.<ro.hardware>.so
 include $(CLEAR_VARS)
 
-#LOCAL_MODULE_RELATIVE_PATH := hw
-LOCAL_C_INCLUDES := \
-    external/libxml2/include \
-    hardware/libhardware/include \
-    system/core/include \
-
-LOCAL_SHARED_LIBRARIES := liblog libcutils libxml2
+LOCAL_MODULE := power.sprd
+LOCAL_MODULE_TAGS := optional
 
 LOCAL_SRC_FILES := \
     common.c \
@@ -36,20 +30,29 @@ LOCAL_SRC_FILES := \
     pm_qos.c \
     utils.c
 
-LOCAL_MODULE := power.sprd
-LOCAL_VENDOR_MODULE := true
-LOCAL_CFLAGS := -DDEBUG=1 -DDEBUG_V=0 -DBOARD_POWERHINT_HAL
+LOCAL_REQUIRED_MODULES := \
+    power_scene_config.xml \
+    power_resource_file_info.xml \
+    power_scene_id_define.txt
+
+LOCAL_SHARED_LIBRARIES := \
+    liblog \
+    libcutils \
+    libxml2
+
+LOCAL_C_INCLUDES := \
+    external/libxml2/include \
+    hardware/libhardware/include \
+    system/core/include
+
+LOCAL_CFLAGS := -DDEBUG=0 -DDEBUG_V=0
 LOCAL_CFLAGS += -DBOOST_SPECIFICED
-ifeq ($(KERNEL_PATH), kernel4.14)
-LOCAL_CFLAGS += -DKERNEL_4_14
-endif
-LOCAL_MODULE_TAGS := optional
+
 include $(BUILD_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := power_scene_config.xml
 LOCAL_MODULE_CLASS := ETC
-LOCAL_VENDOR_MODULE := true
 
 ifeq ($(POWERHINT_PRODUCT_CONFIG),)
 LOCAL_SRC_FILES := config_files/default/scene_config_$(BOARD_POWERHINT_HAL).xml
@@ -61,7 +64,6 @@ include $(BUILD_PREBUILT)
 include $(CLEAR_VARS)
 LOCAL_MODULE := power_resource_file_info.xml
 LOCAL_MODULE_CLASS := ETC
-LOCAL_VENDOR_MODULE := true
 
 ifeq ($(POWERHINT_PRODUCT_CONFIG),)
 LOCAL_SRC_FILES := config_files/default/resource_file_info_$(BOARD_POWERHINT_HAL).xml
@@ -73,9 +75,6 @@ include $(BUILD_PREBUILT)
 include $(CLEAR_VARS)
 LOCAL_MODULE := power_scene_id_define.txt
 LOCAL_MODULE_CLASS := ETC
-LOCAL_VENDOR_MODULE := true
 
 LOCAL_SRC_FILES := config_files/power_scene_id_define.txt
 include $(BUILD_PREBUILT)
-
-endif
