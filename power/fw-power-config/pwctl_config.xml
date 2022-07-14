@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8' standalone='yes' ?>
+<config>
+<item name="LaunchBlackList">
+</item>
+<item name="SpeedTestList">
+<packageName>org.zwanoo.android.speedtest</packageName>
+<packageName>com.network.test</packageName>
+</item>
+</config>
