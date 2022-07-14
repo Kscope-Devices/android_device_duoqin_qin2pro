@@ -13,6 +13,14 @@ PRODUCT_PACKAGES += \
     CarrierConfigOverlayQin2Pro \
     FrameworkResOverlayQin2Pro
 
+# IMS
+PRODUCT_PACKAGES += \
+    android.hidl.manager-V1.0-java \
+    ImsHelper
+
+PRODUCT_COPY_FILES += \
+    $(LOCAL_PATH)/interfaces.xml:system/etc/permissions/interfaces.xml
+
 # Init scripts
 PRODUCT_PACKAGES += \
     ueventd.s9863a1h10.rc \

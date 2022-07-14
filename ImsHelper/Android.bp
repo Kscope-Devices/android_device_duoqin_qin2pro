@@ -1,0 +1,12 @@
+android_app {
+    name: "ImsHelper",
+    platform_apis: true,
+    certificate: "platform",
+    privileged: true,
+    static_libs: [
+        "android.hidl.manager-V1.0-java",
+    ],
+    srcs: [
+        "src/**/*.kt",
+    ],
+}
