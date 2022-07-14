@@ -1,0 +1,2 @@
+# DT2W
+type vendor_sysfs_dt2w, sysfs_type, fs_type;

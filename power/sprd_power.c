@@ -286,6 +286,19 @@ static void ctrl_power_hint(struct sprd_power_module *module, int enable) {
     pthread_mutex_unlock(&pm->lock);
 }
 
+void set_feature(struct sprd_power_module *module, feature_t feature, int state)
+{
+#ifdef TAP_TO_WAKE_NODE
+    char buf[64];
+    if (feature == POWER_FEATURE_DOUBLE_TAP_TO_WAKE) {
+        snprintf(buf, 64, "%d", state);
+        sprd_write(TAP_TO_WAKE_NODE, buf);
+        ALOGD("%s: toggle DT2W status", __func__);
+        return;
+    }
+#endif
+}
+
 static void power_init(struct sprd_power_module __unused *module) {
 
     struct sprd_power_module *pm = (struct sprd_power_module *)module;
@@ -314,6 +327,7 @@ static void power_init(struct sprd_power_module __unused *module) {
 
 struct sprd_power_module power_impl = {
     .init = power_init,
+    .setFeature = set_feature,
     .setInteractive = power_set_interactive,
     .powerHint = sprd_power_hint,
     .get_scene_id = get_scene_id,

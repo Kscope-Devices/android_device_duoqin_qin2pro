@@ -4,3 +4,6 @@ on post-fs
 
 on boot
     stop console
+
+    chown system system /sys/devices/platform/soc/soc:ap-apb/70800000.i2c/i2c-3/3-0038/fts_gesture_mode
+    chmod 0660 /sys/devices/platform/soc/soc:ap-apb/70800000.i2c/i2c-3/3-0038/fts_gesture_mode
