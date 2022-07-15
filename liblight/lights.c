@@ -30,8 +30,6 @@
 #include <hardware/lights.h>
 #include <unistd.h>
 
-#define TOUCH_SUSPEND "/sys/touchscreen/ts_suspend"
-
 static pthread_once_t g_init = PTHREAD_ONCE_INIT;
 static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
 static int last_backlight = 0; //track lcd backlight for tp suspend/resume
@@ -46,9 +44,6 @@ struct led {
     struct led_prop rising_time;
     struct led_prop falling_time;
     struct led_prop on_off;
-    struct led_prop hw_pattern;
-    struct led_prop trigger;
-    struct led_prop ts_suspend;
     struct led_prop ddr_vote;
     struct led_prop ddr_unvote;
 };
@@ -59,11 +54,6 @@ enum {
     GREEN_LED,
     BLUE_LED,
     LCD_BACKLIGHT,
-    BUTTONS_LED,
-    SC27XX_RED,
-    SC27XX_GREEN,
-    SC27XX_BLUE,
-    TS_SUSPEND,
     LCD_DDR_VOTE,
     NUM_LEDS,
 };
@@ -109,29 +99,6 @@ struct led leds[NUM_LEDS] = {
                       "/sys/class/backlight/sprd_backlight/brightness",
                       -1},
                },
-    [BUTTONS_LED] = {
-             .brightness = {
-                    "/sys/class/leds/keyboard-backlight/brightness",
-                    -1},
-             },
-    [SC27XX_RED] = {
-             .brightness = {"/sys/class/leds/sc27xx:red/brightness", -1},
-             .hw_pattern = {"/sys/class/leds/sc27xx:red/hw_pattern", -1},
-             .trigger = {"/sys/class/leds/sc27xx:red/trigger", -1},
-    },
-    [SC27XX_GREEN] = {
-             .brightness = {"/sys/class/leds/sc27xx:green/brightness", -1},
-             .hw_pattern = {"/sys/class/leds/sc27xx:green/hw_pattern", -1},
-             .trigger = {"/sys/class/leds/sc27xx:green/trigger", -1},
-    },
-    [SC27XX_BLUE] = {
-             .brightness = {"/sys/class/leds/sc27xx:blue/brightness", -1},
-             .hw_pattern = {"/sys/class/leds/sc27xx:blue/hw_pattern", -1},
-             .trigger = {"/sys/class/leds/sc27xx:blue/trigger", -1},
-    },
-    [TS_SUSPEND] = {
-             .ts_suspend = {TOUCH_SUSPEND, -1},
-    },
     [LCD_DDR_VOTE] = {
              .ddr_vote = {"/sys/class/devfreq/scene-frequency/sprd_governor/scenario_dfs", -1},
              .ddr_unvote = {"/sys/class/devfreq/scene-frequency/sprd_governor/exit_scene", -1},
@@ -232,78 +199,6 @@ static int write_string(struct led_prop *prop, const char *value) {
     return 0;
 }
 
-static int write_pattern_check(struct led_prop *prop) {
-    int i;
-    int ret;
-
-    for (i=0; i<50; i++) {
-        ret = 0;
-        if (access( prop->filename, F_OK) < 0) {
-            ret |= 0x01;
-        }
-        if (access(prop->filename, R_OK) < 0) {
-            ret |= 0x02;
-        }
-        if (access(prop->filename, W_OK) < 0) {
-            ret |= 0x04;
-        }
-        if (ret) {
-            ALOGE("%s check failed:%d\n", prop->filename, ret);
-            usleep(100);
-        } else {
-            break;
-        }
-    }
-
-    return ret;
-}
-
-static int write_pattern(struct led_prop *prop,
-                         unsigned int brightness,
-                         unsigned int rising,
-                         unsigned int falling,
-                         unsigned int high,
-                         unsigned int low) {
-    int fd;
-    int ret;
-    char *pattern = NULL;
-
-    write_pattern_check(prop);
-
-    fd = open(prop->filename, O_RDWR);
-    if (fd < 0) {
-        ALOGE("open %s failed, errno=%d(%s)\n", prop->filename,
-              errno, strerror(errno));
-        return fd;
-    }
-
-    ret = asprintf(&pattern, "%u %u %u %u %u %u %u %u",
-                   brightness, rising,
-                   brightness, high,
-                   brightness, falling,
-                   brightness, low);
-
-    if (ret < 0) {
-        ALOGE("cook pattern failed, errno=%d(%s)\n", errno, strerror(errno));
-        return ret;
-    }
-
-    ALOGD("perpare to write:%s:%s\n",prop->filename, pattern);
-    ret = write(fd, pattern, strlen(pattern));
-    if (ret < 0) {
-        ALOGE("write %s to %s failed, errno=%d(%s)\n", pattern,
-              prop->filename, errno, strerror(errno));
-        close(fd);
-        free(pattern);
-        return ret;
-    }
-
-    close(fd);
-    free(pattern);
-
-    return 0;
-}
-
 static int rgb_to_brightness(struct light_state_t const *state) {
     int color = state->color & 0x00ffffff;
 
@@ -326,59 +221,17 @@ static int set_light_backlight(struct light_device_t *dev,
     pthread_mutex_lock(&g_lock);
     err = write_int(&leds[LCD_BACKLIGHT].brightness, brightness);
     if ((err >= 0) && (!!brightness != !!last_backlight)) {
-        if(!!brightness) {
-            write_string(&leds[TS_SUSPEND].ts_suspend, "0");
+        if (!!brightness) {
             write_string(&leds[LCD_DDR_VOTE].ddr_vote, "lcdon");
-	    write_string(&leds[LCD_DDR_VOTE].ddr_unvote, "lcdoff");
-	} else {
-            write_string(&leds[TS_SUSPEND].ts_suspend, "1");
+            write_string(&leds[LCD_DDR_VOTE].ddr_unvote, "lcdoff");
+        } else {
             write_string(&leds[LCD_DDR_VOTE].ddr_vote, "lcdoff");
-	    write_string(&leds[LCD_DDR_VOTE].ddr_unvote, "lcdon");
-	}
+            write_string(&leds[LCD_DDR_VOTE].ddr_unvote, "lcdon");
+        }
         last_backlight = brightness;
     }
     pthread_mutex_unlock(&g_lock);
     return err;
-}
-
-static int is_lit(struct light_state_t const *state) {
-    return state->color & 0x00ffffff;
-}
-
-static int set_light_keyboard(struct light_device_t *dev,
-                  struct light_state_t const *state) {
-    int err = 0;
-    int on = is_lit(state);
-
-    ALOGD("file:%s, func:%s, on=%d\n", __FILE__, __func__, on);
-    if (NULL == leds[BUTTONS_LED].brightness.filename) {
-        ALOGE("file:%s, func:%s, unsupported light!\n", __FILE__,
-              __func__);
-        return -EINVAL;
-    }
-
-    pthread_mutex_lock(&g_lock);
-    err = write_int(&leds[BUTTONS_LED].brightness, on ? 255 : 0);
-    pthread_mutex_unlock(&g_lock);
-    return 0;
-}
-
-static int set_light_buttons(struct light_device_t *dev,
-                 struct light_state_t const *state) {
-    int err = 0;
-    int on = is_lit(state);
-
-    ALOGD("file:%s, func:%s, on=%d\n", __FILE__, __func__, on);
-    if (NULL == leds[BUTTONS_LED].brightness.filename) {
-        ALOGE("file:%s, func:%s, unsupported light!\n", __FILE__,
-              __func__);
-        return -EINVAL;
-    }
-
-    pthread_mutex_lock(&g_lock);
-    err = write_int(&leds[BUTTONS_LED].brightness, on ? (on & 0xff) : 0);
-    pthread_mutex_unlock(&g_lock);
-    return 0;
 }
 
 static int close_lights(struct light_device_t *dev) {
@@ -446,84 +299,48 @@ static int set_breath_light(struct light_device_t *dev,
 
     if (ontime_regv > 0 && offtime_regv > 0) {
         if (colorR) {
-            write_int(&leds[SC27XX_RED].brightness, 0);
-            write_string(&leds[SC27XX_RED].trigger, "pattern");
-            if (write_pattern(&leds[SC27XX_RED].hw_pattern, colorR,
-                              hw_rising, hw_high, hw_falling,
-                              hw_low) < 0) {
-                write_int(&leds[RED_LED].rising_time, rise_regv);
-                write_int(&leds[RED_LED].high_time, high_regv);
-                write_int(&leds[RED_LED].falling_time, fall_regv);
-                write_int(&leds[RED_LED].low_time, low_regv);
-                write_int(&leds[RED_LED].on_off, 1);
-            }
+            write_int(&leds[RED_LED].rising_time, rise_regv);
+            write_int(&leds[RED_LED].high_time, high_regv);
+            write_int(&leds[RED_LED].falling_time, fall_regv);
+            write_int(&leds[RED_LED].low_time, low_regv);
+            write_int(&leds[RED_LED].on_off, 1);
         } else {    /*off */
-            write_string(&leds[SC27XX_RED].trigger, "none");
-            write_int(&leds[SC27XX_RED].brightness, 0);
             write_int(&leds[RED_LED].on_off, 0);
         }
         if (colorG) {
-            write_int(&leds[SC27XX_GREEN].brightness, 0);
-            write_string(&leds[SC27XX_GREEN].trigger, "pattern");
-            if (write_pattern(&leds[SC27XX_GREEN].hw_pattern, colorG,
-                              hw_rising, hw_high, hw_falling,
-                              hw_low) < 0) {
-                write_int(&leds[GREEN_LED].rising_time, rise_regv);
-                write_int(&leds[GREEN_LED].high_time, high_regv);
-                write_int(&leds[GREEN_LED].falling_time, fall_regv);
-                write_int(&leds[GREEN_LED].low_time, low_regv);
-                write_int(&leds[GREEN_LED].on_off, 1);
-            }
+            write_int(&leds[GREEN_LED].rising_time, rise_regv);
+            write_int(&leds[GREEN_LED].high_time, high_regv);
+            write_int(&leds[GREEN_LED].falling_time, fall_regv);
+            write_int(&leds[GREEN_LED].low_time, low_regv);
+            write_int(&leds[GREEN_LED].on_off, 1);
         } else {    /*off */
-            write_string(&leds[SC27XX_GREEN].trigger, "none");
-            write_int(&leds[SC27XX_GREEN].brightness, 0);
             write_int(&leds[GREEN_LED].on_off, 0);
         }
         if (colorB) {
-            write_int(&leds[SC27XX_BLUE].brightness, 0);
-            write_string(&leds[SC27XX_BLUE].trigger, "pattern");
-            if (write_pattern(&leds[SC27XX_BLUE].hw_pattern, colorB,
-                              hw_rising, hw_high, hw_falling,
-                              hw_low) < 0) {
-                write_int(&leds[BLUE_LED].rising_time, rise_regv);
-                write_int(&leds[BLUE_LED].high_time, high_regv);
-                write_int(&leds[BLUE_LED].falling_time, fall_regv);
-                write_int(&leds[BLUE_LED].low_time, low_regv);
-                write_int(&leds[BLUE_LED].on_off, 1);
-            }
+            write_int(&leds[BLUE_LED].rising_time, rise_regv);
+            write_int(&leds[BLUE_LED].high_time, high_regv);
+            write_int(&leds[BLUE_LED].falling_time, fall_regv);
+            write_int(&leds[BLUE_LED].low_time, low_regv);
+            write_int(&leds[BLUE_LED].on_off, 1);
         } else {    /*off */
-            write_string(&leds[SC27XX_BLUE].trigger, "none");
-            write_int(&leds[SC27XX_BLUE].brightness, 0);
             write_int(&leds[BLUE_LED].on_off, 0);
         }
     } else {
         if (colorR) {
-            write_string(&leds[SC27XX_RED].trigger, "none");
-            if (write_int(&leds[SC27XX_RED].brightness, colorR) < 0)
-                write_int(&leds[RED_LED].brightness, colorR);
+            write_int(&leds[RED_LED].brightness, colorR);
         } else {    /*off */
-            write_string(&leds[SC27XX_RED].trigger, "none");
-            write_int(&leds[SC27XX_RED].brightness, 0);
             write_int(&leds[RED_LED].brightness, 0);
             write_int(&leds[RED_LED].on_off, 0);
         }
         if (colorG) {
-            write_string(&leds[SC27XX_GREEN].trigger, "none");
-            if (write_int(&leds[SC27XX_GREEN].brightness, colorG) < 0)
-                write_int(&leds[GREEN_LED].brightness, colorG);
+            write_int(&leds[GREEN_LED].brightness, colorG);
         } else {    /*off */
-            write_string(&leds[SC27XX_GREEN].trigger, "none");
-            write_int(&leds[SC27XX_GREEN].brightness, 0);
             write_int(&leds[GREEN_LED].brightness, 0);
             write_int(&leds[GREEN_LED].on_off, 0);
         }
         if (colorB) {
-            write_string(&leds[SC27XX_BLUE].trigger, "none");
-            if (write_int(&leds[SC27XX_BLUE].brightness, colorB) < 0)
-                write_int(&leds[BLUE_LED].brightness, colorB);
+            write_int(&leds[BLUE_LED].brightness, colorB);
         } else {    /*off */
-            write_string(&leds[SC27XX_BLUE].trigger, "none");
-            write_int(&leds[SC27XX_BLUE].brightness, 0);
             write_int(&leds[BLUE_LED].brightness, 0);
             write_int(&leds[BLUE_LED].on_off, 0);
         }
@@ -555,10 +372,6 @@ static int open_lights(const struct hw_module_t *module, char const *name,
 
     if (0 == strcmp(LIGHT_ID_BACKLIGHT, name))
         set_light = set_light_backlight;
-    else if (0 == strcmp(LIGHT_ID_KEYBOARD, name))
-        set_light = set_light_keyboard;
-    else if (0 == strcmp(LIGHT_ID_BUTTONS, name))
-        set_light = set_light_buttons;
     else if (0 == strcmp(LIGHT_ID_NOTIFICATIONS, name))
         set_light = set_light_leds_notifications;
     else if (0 == strcmp(LIGHT_ID_ATTENTION, name))

@@ -1,0 +1,17 @@
+//
+// Copyright (C) 2022 The Kaleidoscope Project
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+cc_library {
+    name: "lights.sp9863a",
+    relative_install_path: "hw",
+    shared_libs: [
+        "libhardware",
+        "liblog"
+    ],
+    srcs: [
+        "lights.c"
+    ],
+}

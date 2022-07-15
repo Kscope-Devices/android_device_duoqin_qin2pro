@@ -1,4 +1,7 @@
 on post-fs
+    mount none /system/lib/hw/lights.sp9863a.so /vendor/lib/hw/lights.sp9863a.so bind
+    mount none /system/lib64/hw/lights.sp9863a.so /vendor/lib64/hw/lights.sp9863a.so bind
+
     mount none /system/lib/power.sprd.so /vendor/lib/power.sprd.so bind
     mount none /system/lib64/power.sprd.so /vendor/lib64/power.sprd.so bind
 

@@ -30,6 +30,10 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
     $(LOCAL_PATH)/keylayout/gpio-keys.kl:system/usr/keylayout/sprd-gpio-keys.kl
 
+# Light
+PRODUCT_PACKAGES += \
+    lights.sp9863a
+
 # PowerHAL
 PRODUCT_PACKAGES += \
     power.sprd

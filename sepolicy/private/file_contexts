@@ -1,3 +1,7 @@
+# Light HAL
+/system/lib/hw/lights\.sp9863a\.so                    u:object_r:system_file:s0
+/system/lib64/hw/lights\.sp9863a\.so                  u:object_r:system_file:s0
+
 # Power HAL
 /system/lib/power\.sprd\.so                           u:object_r:system_file:s0
 /system/lib64/power\.sprd\.so                         u:object_r:system_file:s0
